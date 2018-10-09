@@ -1,14 +1,3 @@
-About
-=====
-AST Transformer integrated with py.test.
-
-Useful for debug, refactoring, 'clean asserts' (see [examples/replace_asserts](examples/replace_asserts))
-
-Usage
-=====
-* write ast transformer
-```python
-# transformer.py
 import ast
 
 from pytest_ast_transformer.ast_transformer import PytestTransformer
@@ -30,13 +19,3 @@ class AssertTransformer(PytestTransformer):
         expr = ast.Expr(value=call_func)
 
         return ast.fix_missing_locations(expr)
-```
-* register new ast transformer
-```python
-# conftest.py
-from tests.transformer import AssertTransformer
-
-
-def pytest_register_ast_transformer(ast_manager):
-    ast_manager.add_transformer(AssertTransformer())
-```
