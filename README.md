@@ -1,11 +1,11 @@
 About
-=====
+-----
 AST Transformer integrated with py.test.
 
 Useful for debug, refactoring, 'clean asserts' (see [examples/replace_asserts](examples/replace_asserts))
 
 Usage
-=====
+-----
 * write ast transformer
 ```python
 # transformer.py
