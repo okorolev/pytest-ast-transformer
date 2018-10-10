@@ -1,5 +1,6 @@
 import ast
 import types
+import typing
 import inspect
 import pathlib
 from typing import Union, Optional
@@ -9,15 +10,21 @@ import pytest
 from pytest_ast_transformer.exceptions import TransformedNotFound
 
 
+class CodeInfo(typing.NamedTuple):
+    ast_tree: ast.AST
+    code: types.CodeType
+
+
 class BaseTransformer(ast.NodeTransformer):
     context: dict
 
-    def transform(self, obj: object, fspath: Union[str, bytes, pathlib.Path]) -> types.CodeType:
+    def transform(self, obj: object, fspath: Union[str, bytes, pathlib.Path]) -> CodeInfo:
         source = inspect.getsource(obj)
         ast_tree = ast.parse(source)
         changed_tree = self.visit(ast_tree)
+        code = compile(changed_tree, filename=fspath, mode="exec")
 
-        return compile(changed_tree, filename=fspath, mode="exec")
+        return CodeInfo(ast_tree=changed_tree, code=code)
 
     @staticmethod
     def exec_transformed(compiled: Union[types.CodeType, str], name: str, context: dict = None) -> Optional[object]:
@@ -31,14 +38,14 @@ class BaseTransformer(ast.NodeTransformer):
 
 class PytestTransformer(BaseTransformer):
 
-    def rewrite_ast(self, func: pytest.Function):
+    def rewrite_ast(self, func: pytest.Function) -> CodeInfo:
         is_class = func.cls
         context = self.merge_contexts(func.obj)
 
         if is_class:
-            self._rewrite_class(func, context)
+            return self._rewrite_class(func, context)
         else:
-            self._rewrite_func(func, context)
+            return self._rewrite_func(func, context)
 
     def merge_contexts(self, obj: types.FunctionType) -> dict:
         return {
@@ -46,14 +53,14 @@ class PytestTransformer(BaseTransformer):
             **self.context
         }
 
-    def _rewrite_class(self, func: pytest.Function, context: dict = None):
+    def _rewrite_class(self, func: pytest.Function, context: dict = None) -> CodeInfo:
         func_name = func.obj.__name__
-        compiled_code = self.transform(func.parent.module, func.parent.fspath)
+        code_info = self.transform(func.parent.module, func.parent.fspath)
 
         transformed_cls = self.exec_transformed(
             name=func.cls.__name__,
             context=context,
-            compiled=compiled_code,
+            compiled=code_info.code,
         )
         transformed_method = getattr(transformed_cls, func_name, None)
 
@@ -62,16 +69,20 @@ class PytestTransformer(BaseTransformer):
 
         setattr(func.parent.cls, func_name, transformed_method)
 
-    def _rewrite_func(self, func: pytest.Function, context: dict = None):
-        compiled_code = self.transform(func.module, func.fspath)
+        return code_info
+
+    def _rewrite_func(self, func: pytest.Function, context: dict = None) -> CodeInfo:
+        code_info = self.transform(func.module, func.fspath)
 
         transformed_func = self.exec_transformed(
             name=func.name,
             context=context,
-            compiled=compiled_code,
+            compiled=code_info.code,
         )
 
         if not transformed_func:
             raise TransformedNotFound(func=transformed_func)
 
         setattr(func, 'obj', transformed_func)
+
+        return code_info
