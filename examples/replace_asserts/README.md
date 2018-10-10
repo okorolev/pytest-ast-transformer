@@ -1,6 +1,6 @@
 About
 -----
-Replace `assert` to `my_asert(1==2, '1 is not 2')`
+Replace `assert` to `my_assert(1==2, '1 is not 2')`
 
 
 Usage
