@@ -2,9 +2,6 @@ import pytest
 import _pytest
 
 
-# def set_module(self, path: str):
-#     self._func.module.__file__ = path
-
 class PytestFunctionProxy:
     """ Proxy class for `pytest.Function` with context.
 
