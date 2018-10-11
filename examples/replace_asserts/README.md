@@ -1,16 +1,16 @@
 About
 -----
-Replace `assert` to `my_assert(1==2, '1 is not 2')`
+Replace `assert` to `my_assert`
 
 
 Usage
 -----
 
-* run 
+* Run 
     ```bash
     py.test -sv examples/replace_asserts/test_simple_assert.py
     ```
-* check output
+* Check output
     ```bash
     self = <tests.test_1.TestSimple object at 0x1058e72b0>
     

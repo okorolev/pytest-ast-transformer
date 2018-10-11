@@ -6,13 +6,18 @@ import pathlib
 from typing import Union, Optional
 
 import pytest
+import astunparse
 
 from pytest_ast_transformer.exceptions import TransformedNotFound
 
 
 class CodeInfo(typing.NamedTuple):
     ast_tree: ast.AST
-    code: types.CodeType
+    code_obj: types.CodeType
+
+    @property
+    def source(self) -> str:
+        return astunparse.unparse(self.ast_tree)
 
 
 class BaseTransformer(ast.NodeTransformer):
@@ -28,7 +33,7 @@ class BaseTransformer(ast.NodeTransformer):
         changed_tree = self.visit(ast_tree)
         code = compile(changed_tree, filename=fspath, mode="exec")
 
-        return CodeInfo(ast_tree=changed_tree, code=code)
+        return CodeInfo(ast_tree=changed_tree, code_obj=code)
 
     @staticmethod
     def exec_transformed(compiled: Union[types.CodeType, str], name: str, context: dict = None) -> Optional[object]:
@@ -65,7 +70,7 @@ class PytestTransformer(BaseTransformer):
             **self.context
         }
 
-    def _rewrite_class(self, func: pytest.Function, context: dict = None) -> CodeInfo:
+    def _rewrite_class(self, func: pytest.Function, *, context: dict) -> CodeInfo:
         """ Transform ast for test class.
         """
         func_name = func.obj.__name__
@@ -74,7 +79,7 @@ class PytestTransformer(BaseTransformer):
         transformed_cls = self.exec_transformed(
             name=func.cls.__name__,
             context=context,
-            compiled=code_info.code,
+            compiled=code_info.code_obj,
         )
         transformed_method = getattr(transformed_cls, func_name, None)
 
@@ -85,7 +90,7 @@ class PytestTransformer(BaseTransformer):
 
         return code_info
 
-    def _rewrite_func(self, func: pytest.Function, context: dict = None) -> CodeInfo:
+    def _rewrite_func(self, func: pytest.Function, *, context: dict) -> CodeInfo:
         """ Transform ast for single test function.
         """
         code_info = self.transform(func.module, func.fspath)
@@ -93,7 +98,7 @@ class PytestTransformer(BaseTransformer):
         transformed_func = self.exec_transformed(
             name=func.name,
             context=context,
-            compiled=code_info.code,
+            compiled=code_info.code_obj,
         )
 
         if not transformed_func:
