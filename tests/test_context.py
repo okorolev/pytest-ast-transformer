@@ -5,7 +5,7 @@ from tests.transformer import AssertTransformer
 
 class TestContext:
 
-    def test_check_merged_contexts(self, testdir, mocker):
+    def test_check_merged_contexts(self, testdir):
         source = """
             import pytest
             
