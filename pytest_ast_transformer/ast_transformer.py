@@ -66,7 +66,7 @@ class PytestTransformer(BaseTransformer):
         }
 
     def _rewrite_class(self, func: pytest.Function, context: dict = None) -> CodeInfo:
-        """ Transform test class ast.
+        """ Transform ast for test class.
         """
         func_name = func.obj.__name__
         code_info = self.transform(func.parent.module, func.parent.fspath)
@@ -86,7 +86,7 @@ class PytestTransformer(BaseTransformer):
         return code_info
 
     def _rewrite_func(self, func: pytest.Function, context: dict = None) -> CodeInfo:
-        """ Transform single test function ast.
+        """ Transform ast for single test function.
         """
         code_info = self.transform(func.module, func.fspath)
 
