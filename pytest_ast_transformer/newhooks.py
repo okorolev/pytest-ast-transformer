@@ -1,5 +1,6 @@
 def pytest_register_ast_transformer(ast_manager):
-    """
-    :param ast_manager:
-    :return:
+    """ Register new ast transformers via `ast_manager.add_transformer`.
+
+        Example:
+            ast_manager.add_transformer(AssertTransformer())
     """

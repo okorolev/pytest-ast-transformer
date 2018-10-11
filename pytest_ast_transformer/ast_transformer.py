@@ -19,6 +19,10 @@ class BaseTransformer(ast.NodeTransformer):
     context: dict
 
     def transform(self, obj: object, fspath: Union[str, bytes, pathlib.Path]) -> CodeInfo:
+        """ Transform ast for `obj` and compile changed ast.
+
+            For more information about `obj` see inspect.getfile()
+        """
         source = inspect.getsource(obj)
         ast_tree = ast.parse(source)
         changed_tree = self.visit(ast_tree)
@@ -28,6 +32,8 @@ class BaseTransformer(ast.NodeTransformer):
 
     @staticmethod
     def exec_transformed(compiled: Union[types.CodeType, str], name: str, context: dict = None) -> Optional[object]:
+        """ Exec compiled code with context. Return python object.
+        """
         _local_ctx = {}
         _global_ctx = context or {}
 
@@ -39,6 +45,10 @@ class BaseTransformer(ast.NodeTransformer):
 class PytestTransformer(BaseTransformer):
 
     def rewrite_ast(self, func: pytest.Function) -> CodeInfo:
+        """ Transform ast tree for `pytest.Function`.
+
+            Support test classes and single functions.
+        """
         is_class = func.cls
         context = self.merge_contexts(func.obj)
 
@@ -48,12 +58,16 @@ class PytestTransformer(BaseTransformer):
             return self._rewrite_func(func, context)
 
     def merge_contexts(self, obj: types.FunctionType) -> dict:
+        """ Merge global pytest ctx and transformer ctx (see `BaseTransformer.context`)
+        """
         return {
             **obj.__globals__,
             **self.context
         }
 
     def _rewrite_class(self, func: pytest.Function, context: dict = None) -> CodeInfo:
+        """ Transform test class ast.
+        """
         func_name = func.obj.__name__
         code_info = self.transform(func.parent.module, func.parent.fspath)
 
@@ -72,6 +86,8 @@ class PytestTransformer(BaseTransformer):
         return code_info
 
     def _rewrite_func(self, func: pytest.Function, context: dict = None) -> CodeInfo:
+        """ Transform single test function ast.
+        """
         code_info = self.transform(func.module, func.fspath)
 
         transformed_func = self.exec_transformed(
