@@ -4,6 +4,7 @@ import pytest
 
 from pytest_ast_transformer import newhooks
 from pytest_ast_transformer.ast_manager import ASTManager
+from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 
 if typing.TYPE_CHECKING:
     from _pytest.config import Config, PytestPluginManager
@@ -12,12 +13,14 @@ if typing.TYPE_CHECKING:
 def pytest_collection_modifyitems(config: 'Config', items: typing.List[pytest.Function]):
     manager: ASTManager = config.ast_manager
 
-    if manager.is_empty:
+    if not manager or manager.is_empty:
         return
 
-    for func in items:
+    for item in items:
+        proxy_item = PytestFunctionProxy(item)
+
         for transformer in manager.transformers:
-            transformer.rewrite_ast(func)
+            transformer.rewrite_ast(proxy_item)
 
 
 def pytest_configure(config: 'Config'):

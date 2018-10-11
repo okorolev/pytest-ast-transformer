@@ -1,6 +1,6 @@
 import typing
 
-from pytest_ast_transformer.ast_transformer import PytestTransformer
+from pytest_ast_transformer.transformer import PytestTransformer
 
 
 class ASTManager:

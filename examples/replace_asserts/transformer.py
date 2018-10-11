@@ -1,9 +1,9 @@
 import ast
 
-from pytest_ast_transformer.ast_transformer import PytestTransformer
+from pytest_ast_transformer.transformer import PytestTransformer
 
 
-def my_assert(test_result, msg=''):
+def my_assert(test_result, msg):
     print(f'my assert: {test_result} {msg}')
     assert test_result, msg
 
