@@ -7,4 +7,7 @@ class TransformedNotFound(Exception):
             f'Class: {cls}'
         )
 
+        self.cls = cls
+        self.func = func
+        self.message = message
         super().__init__(message)
