@@ -1,6 +1,7 @@
 import pytest
 
 from pytest_ast_transformer import exceptions
+from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 
 from tests.transformer import AssertTransformer
 
@@ -14,8 +15,9 @@ class TestTransforms:
         """
         testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
 
-        code = AssertTransformer().rewrite_ast(item)
+        code = AssertTransformer().rewrite_ast(wrapper)
 
         # Module -> FunctionDef -> Expr -> Call
         assert code.ast_tree.body[0].body[0].value.func.id == 'my_assert'
@@ -29,8 +31,9 @@ class TestTransforms:
         """
         testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
 
-        code = AssertTransformer().rewrite_ast(item)
+        code = AssertTransformer().rewrite_ast(wrapper)
 
         # Module -> ClassDef -> FunctionDef -> Expr -> Call
         assert code.ast_tree.body[0].body[0].body[0].value.func.id == 'my_assert'
@@ -41,7 +44,7 @@ class TestTransforms:
     def test_function__transformed_not_found(self, testdir, mocker):
         mocker.patch(
             'tests.transformer.AssertTransformer.exec_transformed',
-            return_value=None,
+            return_value={},
         )
         source = """
             def test_func(): 
@@ -49,19 +52,19 @@ class TestTransforms:
         """
         testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
 
         with pytest.raises(exceptions.TransformedNotFound) as error:
-            AssertTransformer().rewrite_ast(item)
+            AssertTransformer().rewrite_ast(wrapper)
 
-        assert error.value.func is None
-        assert error.value.cls == '<Not expected>'
+        assert 'Function not found' in error.value.message
         assert 'Transformed object not found' in error.value.message
 
     @pytest.mark.code
     def test_class__transformed_not_found(self, testdir, mocker):
         mocker.patch(
             'tests.transformer.AssertTransformer.exec_transformed',
-            return_value=None,
+            return_value={},
         )
         source = """
             class TestX: 
@@ -69,10 +72,10 @@ class TestTransforms:
         """
         testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
 
         with pytest.raises(exceptions.TransformedNotFound) as error:
-            AssertTransformer().rewrite_ast(item)
+            AssertTransformer().rewrite_ast(wrapper)
 
-        assert error.value.cls is None
-        assert error.value.func is None
+        assert 'Class not found' in error.value.message
         assert 'Transformed object not found' in error.value.message

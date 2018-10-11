@@ -1,5 +1,6 @@
 import pytest
 
+from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 from tests.transformer import AssertTransformer
 
 
@@ -14,8 +15,9 @@ class TestContext:
         """
         testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
 
-        ctx = AssertTransformer().merge_contexts(item.obj)
+        ctx = AssertTransformer().merge_contexts(wrapper.obj)
 
         assert 'pytest' in ctx
         assert 'my_assert' in ctx
