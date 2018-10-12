@@ -43,8 +43,7 @@ class PytestTransformer(BaseTransformer):
 
             Support test classes and single functions.
         """
-        context = self.merge_contexts(proxy.obj)
-
+        context = self.merge_contexts(proxy.real_obj)
         return self._rewrite(proxy, context=context)
 
     def merge_contexts(self, obj: types.FunctionType) -> dict:
