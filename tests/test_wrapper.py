@@ -92,3 +92,16 @@ class TestWrapper:
         wrapper.set_cls(TestNew)
 
         assert item.parent.cls == TestNew
+
+    def test_set_cls_method(self, testdir):
+        item = testdir.getitem(cls_source)
+        wrapper = PytestFunctionProxy(item)
+
+        class TestNew:
+            def test_x(self): pass
+
+        method = TestNew().test_x
+
+        wrapper.set_cls_method('test_func', method)
+
+        assert getattr(item.parent.obj, 'test_func') == method
