@@ -13,7 +13,6 @@ class TestTransforms:
             def test_func(): 
                 assert True, 'some_msg'
         """
-        testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
         wrapper = PytestFunctionProxy(item)
 
@@ -29,7 +28,6 @@ class TestTransforms:
             class TestX: 
                 def test_func(self): assert True, 'some_msg'
         """
-        testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
         wrapper = PytestFunctionProxy(item)
 
@@ -50,7 +48,6 @@ class TestTransforms:
             def test_func(): 
                 assert True, 'some_msg'
         """
-        testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
         wrapper = PytestFunctionProxy(item)
 
