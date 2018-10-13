@@ -5,3 +5,15 @@ class TransformedNotFound(Exception):
 
         self.message = message
         super().__init__(message)
+
+
+class ContextIsRequired(Exception):
+
+    def __init__(self):
+        message = (
+            'Set context to transformer. '
+            'Help: `context = {}`'
+        )
+
+        self.message = message
+        super().__init__(message)

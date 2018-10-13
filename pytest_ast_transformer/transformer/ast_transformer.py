@@ -4,7 +4,7 @@ import inspect
 import pathlib
 from typing import Union, Dict
 
-from pytest_ast_transformer.exceptions import TransformedNotFound
+from pytest_ast_transformer.exceptions import TransformedNotFound, ContextIsRequired
 from pytest_ast_transformer.transformer.code import Code
 from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 
@@ -47,8 +47,12 @@ class PytestTransformer(BaseTransformer):
         return self._rewrite(proxy, context=context)
 
     def merge_contexts(self, obj: types.FunctionType) -> dict:
-        """ Merge global pytest ctx and transformer ctx (see `BaseTransformer.context`)
+        """ Merge global pytest ctx and transformer ctx (see `BaseTransformer.context`).
+            Return new context.
         """
+        if self.context is None:
+            raise ContextIsRequired()
+
         return {
             **obj.__globals__,
             **self.context
