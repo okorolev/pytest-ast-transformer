@@ -1,6 +1,6 @@
 from setuptools import setup
 
-PACKAGE = 'pytest_ast_transformer'
+PACKAGE = 'pytest-ast-transformer'
 
 requirements = [
     'pytest',
@@ -10,7 +10,7 @@ requirements = [
 setup(
     name=PACKAGE,
     version='1.0.0',
-    packages=[PACKAGE],
+    packages=['pytest_ast_transformer'],
     entry_points={
         "pytest11": ["pytest_ast_transformer = pytest_ast_transformer.plugin"],
     },
