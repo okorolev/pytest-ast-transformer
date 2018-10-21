@@ -67,7 +67,6 @@ class TestTransforms:
             class TestX: 
                 def test_func(self): assert True, 'some_msg'
         """
-        testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
         wrapper = PytestFunctionProxy(item)
 

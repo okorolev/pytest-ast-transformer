@@ -12,15 +12,16 @@ if typing.TYPE_CHECKING:
 
 def pytest_collection_modifyitems(config: 'Config', items: typing.List[pytest.Function]):
     manager: ASTManager = config.ast_manager
+    transformers = manager.transformers
 
     if not manager or manager.is_empty:
         return
 
-    for item in items:
-        proxy_item = PytestFunctionProxy(item)
+    proxy_items = set(map(PytestFunctionProxy, items))
 
-        for transformer in manager.transformers:
-            transformer.rewrite_ast(proxy_item)
+    for item in proxy_items:
+        for transformer in transformers:
+            transformer.rewrite_ast(item)
 
 
 def pytest_configure(config: 'Config'):

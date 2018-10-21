@@ -51,17 +51,24 @@ class TestWrapper:
 
         assert wrapper.real_func_name == item.obj.__name__
 
-    def test_ctx_info_func(self, testdir):
+    def test_set_source__file_changed(self, testdir):
         item = testdir.getitem(func_source)
         wrapper = PytestFunctionProxy(item)
+        original_file = wrapper.module.__file__
+        wrapper.is_transformed = True
 
-        assert wrapper.ctx_info() == (item.module, item.fspath)
+        wrapper.set_source(func_source)
 
-    def test_ctx_info_class(self, testdir):
-        item = testdir.getitem(cls_source)
+        assert wrapper.module.__file__ is not original_file
+
+    def test_set_source__file_not_changed(self, testdir):
+        item = testdir.getitem(func_source)
         wrapper = PytestFunctionProxy(item)
+        original_file = wrapper.module.__file__
 
-        assert wrapper.ctx_info() == (item.parent.module, item.parent.fspath)
+        wrapper.set_source(func_source)
+
+        assert wrapper.module.__file__ is original_file
 
     @pytest.mark.parametrize('source, expected', [
         (func_source, attrgetter('real_func_name')),
