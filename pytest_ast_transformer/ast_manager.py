@@ -4,10 +4,10 @@ from pytest_ast_transformer.transformer import PytestTransformer
 
 
 class ASTManager:
-    transformers: typing.Set[PytestTransformer]
+    transformers: typing.List[PytestTransformer]
 
     def __init__(self, transformers=None):
-        self.transformers = transformers or set()
+        self.transformers = transformers or []
 
     def __repr__(self):
         return f'ASTManager <{self.transformers}>'
@@ -17,4 +17,4 @@ class ASTManager:
         return not bool(self.transformers)
 
     def add_transformer(self, transformer):
-        self.transformers.add(transformer)
+        self.transformers.append(transformer)
