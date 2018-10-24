@@ -38,7 +38,6 @@ class TestTransforms:
         assert code.ast_tree.body[0].body[0].body[0].value.args[0].value is True
         assert code.ast_tree.body[0].body[0].body[0].value.args[1].s == 'some_msg'
 
-    @pytest.mark.code
     def test_function__transformed_not_found(self, testdir, mocker):
         mocker.patch(
             'tests.transformer.AssertTransformer.exec_transformed',
@@ -57,7 +56,6 @@ class TestTransforms:
         assert 'Function not found' in error.value.message
         assert 'Transformed object not found' in error.value.message
 
-    @pytest.mark.code
     def test_class__transformed_not_found(self, testdir, mocker):
         mocker.patch(
             'tests.transformer.AssertTransformer.exec_transformed',

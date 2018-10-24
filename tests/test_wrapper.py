@@ -88,7 +88,7 @@ class TestWrapper:
 
         wrapper.set_func(test_func_new)
 
-        assert item.obj == test_func_new
+        assert item.obj is test_func_new
 
     def test_set_cls(self, testdir):
         item = testdir.getitem(cls_source)
@@ -98,7 +98,7 @@ class TestWrapper:
 
         wrapper.set_cls(TestNew)
 
-        assert item.parent.cls == TestNew
+        assert item.parent.cls is TestNew
 
     def test_set_cls_method(self, testdir):
         item = testdir.getitem(cls_source)
@@ -111,4 +111,4 @@ class TestWrapper:
 
         wrapper.set_cls_method('test_func', method)
 
-        assert getattr(item.parent.obj, 'test_func') == method
+        assert getattr(item.parent.obj, 'test_func') is method
