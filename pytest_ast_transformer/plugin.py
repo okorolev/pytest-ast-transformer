@@ -14,22 +14,33 @@ def pytest_collection_modifyitems(config: 'Config', items: typing.List[pytest.Fu
     manager: ASTManager = config.ast_manager
     transformers = manager.transformers
 
+    allow_show_code = config.option.show_code
+    disable_transforms = config.option.disable_transforms
+
     if not manager or manager.is_empty:
+        return
+
+    if disable_transforms:
         return
 
     proxy_items = set(map(PytestFunctionProxy, items))
 
     for item in proxy_items:
         for transformer in transformers:
-            transformer.rewrite_ast(item)
+            transformer.rewrite_ast(item, show_code=allow_show_code)
 
 
 def pytest_configure(config: 'Config'):
     ast_manager = ASTManager()
 
     config.ast_manager = ast_manager
-    config.hook.pytest_register_ast_transformer(ast_manager=ast_manager)
+    config.hook.pytest_register_ast_transformer(ast_manager=ast_manager, config=config)
 
 
 def pytest_addhooks(pluginmanager: 'PytestPluginManager'):
     pluginmanager.add_hookspecs(newhooks)
+
+
+def pytest_addoption(parser: 'Parser'):
+    parser.addoption("--show-code", action="store_true", dest="show_code", default=False)
+    parser.addoption("--disable-transforms", action="store_true", dest="disable_transforms", default=False)

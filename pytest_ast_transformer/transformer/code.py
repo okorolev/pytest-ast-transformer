@@ -7,8 +7,11 @@ import astunparse
 
 class Code(typing.NamedTuple):
     ast_tree: ast.AST
-    code_obj: types.CodeType
+    context: dict
 
     @property
     def source(self) -> str:
         return astunparse.unparse(self.ast_tree)
+
+    def compile(self, filename: str = '<no_file>') -> types.CodeType:
+        return compile(self.ast_tree, filename=filename, mode='exec')
