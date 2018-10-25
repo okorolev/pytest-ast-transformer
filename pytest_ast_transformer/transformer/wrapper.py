@@ -1,11 +1,13 @@
+import ast
+import inspect
 import types
-import tempfile
 from typing import Optional, Union
 
 import pytest
 from py._path.local import LocalPath
 
 from pytest_ast_transformer.transformer.code import Code
+from pytest_ast_transformer.transformer.utils import save_tmp_file
 
 PathLikeOrStr = Union[LocalPath, str]
 
@@ -36,12 +38,16 @@ class PytestFunctionProxy:
 
         self.code = None
         self.module = self.pytest_func.module
+        self.fspath = self.pytest_func.fspath
 
-    def __hash__(self):
-        return hash(self.module)
+        setattr(self.module, 'transformer_tmp_files', set())
 
-    def __eq__(self, other):
-        return self.module is other.module
+    @property
+    def ast_tree(self):
+        last_tree = getattr(self.module, 'ast_tree', None)
+        tree = ast.parse(inspect.getsource(self.module))
+
+        return last_tree or tree
 
     @property
     def ctx_name(self) -> str:
@@ -56,18 +62,13 @@ class PytestFunctionProxy:
         return f'Function not found.'
 
     def set_source(self, source: str) -> PathLikeOrStr:
-        test_name = self.pytest_func.name
-        fspath = self.pytest_func.fspath
-        module = self.module
-
         if self.is_transformed:
-            # TODO: remove all tmp files
-            with tempfile.NamedTemporaryFile(suffix='.py', prefix=test_name, delete=False, mode='w') as f:
-                f.write(source)
-                module.__file__ = f.name
-                return f.name
+            return self._set_temp_file_to_test(source)
 
-        return fspath
+        return self.fspath
+
+    def set_ast_tree(self, tree):
+        setattr(self.module, 'ast_tree', tree)
 
     def set_cls_method(self, fn_name: str, transformed_method: object):
         parent = self.pytest_func.getparent(pytest.Class)
@@ -88,3 +89,11 @@ class PytestFunctionProxy:
             self.set_cls(obj)
         else:
             self.set_func(obj)
+
+    def _set_temp_file_to_test(self, source: str) -> str:
+        path_to_file = save_tmp_file(source, self.pytest_func.name)
+
+        self.module.__file__ = path_to_file
+        self.module.transformer_tmp_files.add(path_to_file)
+
+        return path_to_file

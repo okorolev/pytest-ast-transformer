@@ -4,10 +4,12 @@ import pytest
 
 from pytest_ast_transformer import newhooks
 from pytest_ast_transformer.ast_manager import ASTManager
+from pytest_ast_transformer.transformer.utils import delete_tmp_files
 from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 
 if typing.TYPE_CHECKING:
     from _pytest.config import Config, PytestPluginManager
+    from _pytest.runner import CallInfo
 
 
 def pytest_collection_modifyitems(config: 'Config', items: typing.List[pytest.Function]):
@@ -44,3 +46,15 @@ def pytest_addhooks(pluginmanager: 'PytestPluginManager'):
 def pytest_addoption(parser: 'Parser'):
     parser.addoption("--show-code", action="store_true", dest="show_code", default=False)
     parser.addoption("--disable-transforms", action="store_true", dest="disable_transforms", default=False)
+
+    # TODO
+    parser.addoption("--no-tmp-files", action="store_true", dest="no_tmp_files", default=False)
+
+
+def pytest_runtest_makereport(item: pytest.Function, call: 'CallInfo'):
+    if call.when == 'teardown':
+        tmp_files = getattr(item.module, 'transformer_tmp_files', None)
+
+        if tmp_files is not None:
+            # NOTE: only for 2+ transformers
+            delete_tmp_files(tmp_files)

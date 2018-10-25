@@ -19,3 +19,10 @@ class AssertTransformer(PytestTransformer):
         expr = ast.Expr(value=call_func)
 
         return ast.fix_missing_locations(expr)
+
+
+class EmptyTransformerWithInheritance(PytestTransformer):
+    context = {
+        'random_object': object()
+    }
+    allow_inheritance_ctx = True

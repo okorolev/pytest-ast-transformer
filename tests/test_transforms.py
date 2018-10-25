@@ -73,3 +73,15 @@ class TestTransforms:
 
         assert 'Class not found' in error.value.message
         assert 'Transformed object not found' in error.value.message
+
+    def test_ast_tree(self, testdir):
+        source = """
+            def test_func(): 
+                assert True, 'some_msg'
+        """
+        item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
+
+        code = AssertTransformer().rewrite_ast(wrapper)
+
+        assert wrapper.ast_tree == code.ast_tree
