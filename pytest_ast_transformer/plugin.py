@@ -47,9 +47,6 @@ def pytest_addoption(parser: 'Parser'):
     parser.addoption("--show-code", action="store_true", dest="show_code", default=False)
     parser.addoption("--disable-transforms", action="store_true", dest="disable_transforms", default=False)
 
-    # TODO
-    parser.addoption("--no-tmp-files", action="store_true", dest="no_tmp_files", default=False)
-
 
 def pytest_runtest_makereport(item: pytest.Function, call: 'CallInfo'):
     if call.when == 'teardown':

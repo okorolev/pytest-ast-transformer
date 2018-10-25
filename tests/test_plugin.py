@@ -1,5 +1,6 @@
 import os
 import tempfile
+from pathlib import Path
 
 func_source = """
     def test_func(): 
@@ -13,6 +14,12 @@ cls_source = """
 
 
 class TestPlugin:
+
+    def setup_method(self):
+        tmp_dir = Path(tempfile.gettempdir())
+
+        # NOTE: other test generate tmp files
+        _unlink_files = list(map(lambda p: p.unlink(), tmp_dir.rglob('test_func_transformed*')))
 
     def test_simple_transformer(self, testdir, load_plugin):
         testdir.makepyfile(func_source)
@@ -77,6 +84,7 @@ class TestPlugin:
         assert result.ret == 1
 
     def test_check_delete_temp_files(self, testdir):
+        tmp_dir = tempfile.gettempdir()
         testdir.makeconftest(
             """
             from tests import transformer
@@ -89,9 +97,8 @@ class TestPlugin:
         testdir.makepyfile(func_source)
         testdir.runpytest()
 
-        tmp_dir = tempfile.gettempdir()
-        is_any_test_exists = any(
-            filter(lambda test_name: 'test_func_transformed' in test_name, os.listdir(tmp_dir))
+        is_any_test_exists = list(
+            filter(lambda name: 'test_func_transformed' in name, os.listdir(tmp_dir))
         )
 
         assert not is_any_test_exists
