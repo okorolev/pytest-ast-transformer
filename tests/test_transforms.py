@@ -38,7 +38,6 @@ class TestTransforms:
         assert code.ast_tree.body[0].body[0].body[0].value.args[0].value is True
         assert code.ast_tree.body[0].body[0].body[0].value.args[1].s == 'some_msg'
 
-    @pytest.mark.code
     def test_function__transformed_not_found(self, testdir, mocker):
         mocker.patch(
             'tests.transformer.AssertTransformer.exec_transformed',
@@ -57,7 +56,6 @@ class TestTransforms:
         assert 'Function not found' in error.value.message
         assert 'Transformed object not found' in error.value.message
 
-    @pytest.mark.code
     def test_class__transformed_not_found(self, testdir, mocker):
         mocker.patch(
             'tests.transformer.AssertTransformer.exec_transformed',
@@ -67,7 +65,6 @@ class TestTransforms:
             class TestX: 
                 def test_func(self): assert True, 'some_msg'
         """
-        testdir.makepyfile(source)
         item: pytest.Function = testdir.getitem(source)
         wrapper = PytestFunctionProxy(item)
 
@@ -76,3 +73,15 @@ class TestTransforms:
 
         assert 'Class not found' in error.value.message
         assert 'Transformed object not found' in error.value.message
+
+    def test_ast_tree(self, testdir):
+        source = """
+            def test_func(): 
+                assert True, 'some_msg'
+        """
+        item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
+
+        code = AssertTransformer().rewrite_ast(wrapper)
+
+        assert wrapper.ast_tree == code.ast_tree

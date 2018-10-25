@@ -1,8 +1,8 @@
 import ast
 import types
-import inspect
-import pathlib
 from typing import Union, Dict
+
+import astor
 
 from pytest_ast_transformer.exceptions import TransformedNotFound, ContextIsRequired
 from pytest_ast_transformer.transformer.code import Code
@@ -10,19 +10,19 @@ from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 
 
 class BaseTransformer(ast.NodeTransformer):
-    context: dict
+    context: dict = None
+    allow_inheritance_ctx: bool = False
 
-    def transform(self, obj: object, fspath: Union[str, bytes, pathlib.Path]) -> Code:
-        """ Transform ast for `obj` and compile changed ast.
-
-            For more information about `obj` see inspect.getfile()
+    def transform(self, ast_tree: str, context: dict, changed: bool = False) -> Code:
+        """ Transform ast for `source`
         """
-        source = inspect.getsource(obj)
-        ast_tree = ast.parse(source)
         changed_tree = self.visit(ast_tree)
-        code = compile(changed_tree, filename=fspath, mode="exec")
 
-        return Code(ast_tree=changed_tree, code_obj=code)
+        if changed:
+            # TODO: this is hack (line fix)
+            changed_tree = ast.parse(astor.to_source(changed_tree))
+
+        return Code(ast_tree=changed_tree, context=context)
 
     @staticmethod
     def exec_transformed(compiled: Union[types.CodeType, str], context: dict = None) -> Dict[str, object]:
@@ -38,13 +38,22 @@ class BaseTransformer(ast.NodeTransformer):
 
 class PytestTransformer(BaseTransformer):
 
-    def rewrite_ast(self, proxy: PytestFunctionProxy) -> Code:
+    def rewrite_ast(self, proxy: PytestFunctionProxy, *, show_code=False) -> Code:
         """ Transform ast tree for `pytest.Function`.
 
             Support test classes and single functions.
         """
         context = self.merge_contexts(proxy.real_obj)
-        return self._rewrite(proxy, context=context)
+
+        if proxy.is_transformed and self.allow_inheritance_ctx:
+            context = {**context, **proxy.code.context}
+
+        code = self._rewrite(proxy, context=context)
+
+        if show_code:
+            print(code.source)
+
+        return code
 
     def merge_contexts(self, obj: types.FunctionType) -> dict:
         """ Merge global pytest ctx and transformer ctx (see `BaseTransformer.context`).
@@ -61,18 +70,22 @@ class PytestTransformer(BaseTransformer):
     def _rewrite(self, proxy: PytestFunctionProxy, *, context: dict) -> Code:
         """ Transform ast for class or function.
         """
-        ctx_module, ctx_fspath = proxy.ctx_info()
-        code_info = self.transform(ctx_module, ctx_fspath)
+        code_info = self.transform(proxy.ast_tree, context, proxy.is_transformed)
+
+        proxy.set_ast_tree(code_info.ast_tree)
+
+        path_to_source = proxy.set_source(code_info.source)
+        compiled_code = code_info.compile(path_to_source)
 
         ctx = self.exec_transformed(
             context=context,
-            compiled=code_info.code_obj,
+            compiled=compiled_code,
         )
         transformed = ctx.get(proxy.ctx_name)
 
         if not transformed:
             raise TransformedNotFound(proxy.ctx_exception_msg)
 
-        proxy.set_object(transformed)
+        proxy.set_object(transformed, last_code=code_info)
 
         return code_info

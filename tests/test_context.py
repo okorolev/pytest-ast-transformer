@@ -2,7 +2,7 @@ import pytest
 
 from pytest_ast_transformer.transformer.wrapper import PytestFunctionProxy
 from pytest_ast_transformer.exceptions import ContextIsRequired
-from tests.transformer import AssertTransformer
+from tests.transformer import AssertTransformer, EmptyTransformerWithInheritance
 
 
 class TestContext:
@@ -37,3 +37,17 @@ class TestContext:
 
         with pytest.raises(ContextIsRequired) as error:
             transformer.merge_contexts(wrapper.real_obj)
+
+    def test_allow_inheritance_ctx(self, testdir):
+        source = """
+            def test_func():
+                assert 1==2, 'some_msg'
+        """
+        item: pytest.Function = testdir.getitem(source)
+        wrapper = PytestFunctionProxy(item)
+
+        AssertTransformer().rewrite_ast(wrapper)
+        empty_transformer = EmptyTransformerWithInheritance().rewrite_ast(wrapper)
+
+        assert 'my_assert' in empty_transformer.context
+        assert 'random_object' in empty_transformer.context

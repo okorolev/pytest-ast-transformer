@@ -4,7 +4,7 @@ PACKAGE = 'pytest-ast-transformer'
 
 requirements = [
     'pytest',
-    'astunparse'
+    'astor'
 ]
 
 setup(
