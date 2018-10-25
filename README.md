@@ -4,6 +4,14 @@ AST Transformer integrated with py.test.
 
 Useful for debug, refactoring, 'clean asserts' (see [examples/replace_asserts](examples/replace_asserts))
 
+Support options
+---------------
+| Options                  | Description                    |
+| -----------              | -----------                    |
+| `--show-code`            | show generated code            |
+| `--disable-transforms`   | disable all ast transformers   |
+
+
 Usage
 -----
 
