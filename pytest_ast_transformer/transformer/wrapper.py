@@ -9,8 +9,6 @@ from py._path.local import LocalPath
 from pytest_ast_transformer.transformer.code import Code
 from pytest_ast_transformer.transformer.utils import save_tmp_file
 
-PathLikeOrStr = Union[LocalPath, str]
-
 
 class PytestFunctionProxy:
     """ Proxy class for `pytest.Function` with context.
@@ -43,11 +41,13 @@ class PytestFunctionProxy:
         setattr(self.module, 'transformer_tmp_files', set())
 
     @property
-    def ast_tree(self):
-        last_tree = getattr(self.module, 'ast_tree', None)
-        tree = ast.parse(inspect.getsource(self.module))
+    def ast_tree(self) -> ast.AST:
+        have_ast_tree = hasattr(self.module, 'ast_tree')
 
-        return last_tree or tree
+        if have_ast_tree:
+            return getattr(self.module, 'ast_tree', None)
+
+        return ast.parse(inspect.getsource(self.module))
 
     @property
     def ctx_name(self) -> str:
@@ -61,13 +61,12 @@ class PytestFunctionProxy:
             return f'Class not found.'
         return f'Function not found.'
 
-    def set_source(self, source: str) -> PathLikeOrStr:
+    def set_source(self, source: str) -> Union[LocalPath, str]:
         if self.is_transformed:
             return self._set_temp_file_to_test(source)
-
         return self.fspath
 
-    def set_ast_tree(self, tree):
+    def set_ast_tree(self, tree: ast.AST):
         setattr(self.module, 'ast_tree', tree)
 
     def set_cls_method(self, fn_name: str, transformed_method: object):
