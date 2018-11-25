@@ -1,16 +1,16 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 PACKAGE = 'pytest-ast-transformer'
 
 requirements = [
     'pytest',
-    'astor'
+    'astor',
 ]
 
 setup(
     name=PACKAGE,
     version='1.0.0',
-    packages=['pytest_ast_transformer'],
+    packages=find_packages(exclude=['examples', 'tests']),
     entry_points={
         "pytest11": ["pytest_ast_transformer = pytest_ast_transformer.plugin"],
     },
@@ -24,4 +24,6 @@ setup(
         'Programming Language :: Python :: 3',
         'Development Status :: 3 - Alpha',
     ],
+    tests_require=['pytest-mock'],
+    setup_requires=['pytest-runner'],
 )
