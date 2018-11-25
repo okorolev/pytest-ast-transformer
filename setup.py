@@ -16,9 +16,12 @@ setup(
     },
     install_requires=requirements,
     author='okorolev',
+    url='https://github.com/okorolev/pytest-ast-transformer',
     author_email='johnnyprobel@gmail.com',
     keywords=['pytest', 'ast', 'transformer', 'refactoring', 'testing', 'debug'],
     classifiers=[
-        "Framework :: Pytest",
+        'Framework :: Pytest',
+        'Programming Language :: Python :: 3',
+        'Development Status :: 3 - Alpha',
     ],
 )
