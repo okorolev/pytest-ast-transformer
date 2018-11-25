@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/okorolev/pytest-ast-transformer.svg?branch=master)](https://travis-ci.org/okorolev/pytest-ast-transformer)
+
 About
 -----
 AST Transformer integrated with py.test.
