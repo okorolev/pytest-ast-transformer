@@ -7,14 +7,18 @@ requirements = [
     'astor',
 ]
 
+with open('README.md') as f:
+    readme = f.read()
+
 setup(
-    name=PACKAGE,
+    name='pytest-ast-transformer',
     version='1.0.0',
     packages=find_packages(exclude=['examples', 'tests']),
     entry_points={
         "pytest11": ["pytest_ast_transformer = pytest_ast_transformer.plugin"],
     },
     install_requires=requirements,
+    long_description=readme,
     author='okorolev',
     author_email='johnnyprobel@gmail.com',
     url='https://github.com/okorolev/pytest-ast-transformer',
