@@ -59,6 +59,7 @@ class TestWrapper:
 
         wrapper.set_source(func_source)
 
+        assert wrapper.path_to_source == wrapper.fspath_transformed
         assert wrapper.module.__file__ is not original_file
 
     def test_set_source__file_not_changed(self, testdir):
@@ -68,6 +69,7 @@ class TestWrapper:
 
         wrapper.set_source(func_source)
 
+        assert wrapper.path_to_source == wrapper.fspath
         assert wrapper.module.__file__ is original_file
 
     @pytest.mark.parametrize('source, expected', [

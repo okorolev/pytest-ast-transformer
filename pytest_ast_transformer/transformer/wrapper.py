@@ -1,10 +1,9 @@
 import ast
 import inspect
 import types
-from typing import Optional, Union
+from typing import Optional
 
 import pytest
-from py._path.local import LocalPath
 
 from pytest_ast_transformer.transformer.code import Code
 from pytest_ast_transformer.transformer.utils import save_tmp_file
@@ -37,6 +36,7 @@ class PytestFunctionProxy:
         self.code = None
         self.module = self.pytest_func.module
         self.fspath = self.pytest_func.fspath
+        self.fspath_transformed = None
 
         setattr(self.module, 'transformer_tmp_files', set())
 
@@ -61,10 +61,15 @@ class PytestFunctionProxy:
             return f'Class not found.'
         return f'Function not found.'
 
-    def set_source(self, source: str) -> Union[LocalPath, str]:
+    @property
+    def path_to_source(self) -> str:
         if self.is_transformed:
-            return self._set_temp_file_to_test(source)
+            return self.fspath_transformed
         return self.fspath
+
+    def set_source(self, source: str):
+        if self.is_transformed:
+            self._set_temp_file_to_test(source)
 
     def set_ast_tree(self, tree: ast.AST):
         setattr(self.module, 'ast_tree', tree)
@@ -89,10 +94,9 @@ class PytestFunctionProxy:
         else:
             self.set_func(obj)
 
-    def _set_temp_file_to_test(self, source: str) -> str:
+    def _set_temp_file_to_test(self, source: str):
         path_to_file = save_tmp_file(source, self.pytest_func.name)
 
         self.module.__file__ = path_to_file
         self.module.transformer_tmp_files.add(path_to_file)
-
-        return path_to_file
+        self.fspath_transformed = path_to_file
