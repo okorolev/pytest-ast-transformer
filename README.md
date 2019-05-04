@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/okorolev/pytest-ast-transformer.svg?branch=master)](https://travis-ci.org/okorolev/pytest-ast-transformer)
 
-About
------
+## About
 AST Transformer integrated with py.test.
 
 Useful for debug, refactoring, 'clean asserts' (see [examples/replace_asserts](examples/replace_asserts))
@@ -13,9 +12,12 @@ Support options
 | `--show-code`            | show generated code            |
 | `--disable-transforms`   | disable all ast transformers   |
 
+## Install
+```bash
+pip install pytest-ast-transformer
+```
 
-Usage
------
+## Usage
 
 * Write ast transformer
     ```python

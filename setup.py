@@ -1,7 +1,5 @@
 from setuptools import setup, find_packages
 
-PACKAGE = 'pytest-ast-transformer'
-
 requirements = [
     'pytest',
     'astor',
