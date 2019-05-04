@@ -12,7 +12,7 @@ with open('README.md') as f:
 
 setup(
     name='pytest-ast-transformer',
-    version='1.0.0',
+    version='1.0.1',
     packages=find_packages(exclude=['examples', 'tests']),
     entry_points={
         "pytest11": ["pytest_ast_transformer = pytest_ast_transformer.plugin"],
